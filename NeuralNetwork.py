@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 
 class Layer:
@@ -42,12 +43,16 @@ class NeuralNetwork:
             self.layers[i].activate()
         return self.layers[-1].activations
 
-    def train(self, input, target, alpha):
-        input = np.array(input).reshape((len(input), 1))
-        target = np.array(target).reshape((len(target), 1))
-        output = self.feedforward(input)
-        cost = (output - target) ** 2
-        print(np.average(cost))
-        self.layers[-1].activations_gradient = 2 * (output - target)
-        for i in range(len(self.layers) - 1, 0, -1):
-            self.layers[i].tweak(self.layers[i-1], alpha)
+    def train(self, inputs, targets, alpha=1, epochs=1000):
+        order = [i for i in range(len(inputs))]
+        for i in range(epochs):
+            random.shuffle(order)
+            for j in order:
+                input = inputs[j]
+                target = targets[j]
+                output = self.feedforward(input)
+                cost = (output - target) ** 2
+                print(np.average(cost))
+                self.layers[-1].activations_gradient = 2 * (output - target)
+                for k in range(len(self.layers) - 1, 0, -1):
+                    self.layers[k].tweak(self.layers[k-1], alpha)
