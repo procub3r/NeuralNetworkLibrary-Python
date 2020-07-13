@@ -8,7 +8,7 @@ targets = [[0], [1], [1], [0]]
 alpha = 1
 order = [i for i in range(len(inputs))]
 
-for epoch in range(1000):
+for epoch in range(2000):
     random.shuffle(order)
     for i in order:
         nn.train(inputs[i], targets[i], alpha)
