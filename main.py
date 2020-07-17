@@ -1,11 +1,22 @@
 from NeuralNetwork import NeuralNetwork
-
-nn = NeuralNetwork([2, 2, 1])
-inputs = [[1, 1], [1, 0], [0, 1], [0, 0]]
-targets = [[0], [1], [1], [0]]
-nn.train(inputs, targets, alpha=1, epochs=2000)
-
-print('-----------------')
-
-for i in inputs:
-    print(nn.feedforward(i))
+# import matplotlib.pyplot as plt
+# import numpy as np
+from mlxtend.data import loadlocal_mnist
+#
+# training, training_targets = loadlocal_mnist(
+#     images_path='train-images.idx3-ubyte',
+#     labels_path='train-labels.idx1-ubyte'
+# )
+testing, testing_targets = loadlocal_mnist(
+    images_path='t10k-images.idx3-ubyte',
+    labels_path='t10k-labels.idx1-ubyte'
+)
+#
+# training_targets = NeuralNetwork.one_hot_enc(training_targets)
+testing_targets = NeuralNetwork.one_hot_enc(testing_targets)
+#
+nn = NeuralNetwork.unpickle('state.obj')
+# nn.train(training, training_targets, alpha=0.000001, epochs=1)
+# nn.pickle(file='state.obj')
+#
+nn.test(testing, testing_targets)
