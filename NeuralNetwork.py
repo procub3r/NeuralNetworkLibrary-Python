@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import pickle
 
 
 class Layer:
@@ -12,17 +13,16 @@ class Layer:
         self.activations_gradient = None
 
     def activate(self):
-        self.activations = self.sigmoid(self.values)
+        self.activations = Layer.sigmoid(self.values)
 
     def d_activate(self, x):
         sig = self.sigmoid(x)
         return sig * (1 - sig)
 
     def tweak(self, prev_layer, alpha):
-        prev_layer.activations_gradient = ((self.activations_gradient * self.d_activate(self.values)).T
-                                           .dot(self.weights)).T
-        self.weights -= (self.activations_gradient * self.d_activate(self.values)).dot(prev_layer.activations.T) * alpha
-        self.biases -= self.activations_gradient * self.d_activate(self.values) * alpha
+        prev_layer.activations_gradient = self.weights.T.dot(self.activations_gradient * self.d_activate(self.values))
+        self.weights -= ((self.activations_gradient * self.d_activate(self.values)).dot(prev_layer.activations.T)) * alpha
+        self.biases -= (self.activations_gradient * self.d_activate(self.values)) * alpha
 
     @staticmethod
     def sigmoid(x):
@@ -47,12 +47,39 @@ class NeuralNetwork:
         order = [i for i in range(len(inputs))]
         for i in range(epochs):
             random.shuffle(order)
-            for j in order:
+            for indx, j in enumerate(order):
                 input = inputs[j]
                 target = targets[j]
                 output = self.feedforward(input)
                 cost = (output - target) ** 2
-                print(np.average(cost))
+                print(i, indx, np.average(cost))
                 self.layers[-1].activations_gradient = 2 * (output - target)
                 for k in range(len(self.layers) - 1, 0, -1):
                     self.layers[k].tweak(self.layers[k-1], alpha)
+                    
+    def test(self, test_data, test_labels):
+        correct = 0
+        for i in range(len(test_data)):
+            output = self.feedforward(test_data[i])
+            predicted = np.where(np.isclose(output, max(output)))
+            answer = np.where(np.isclose(test_labels[i], max(test_labels[i])))
+            if predicted == answer:
+                correct += 1
+            print(f'Tested: {i} / {len(test_data)}', end='\r')
+        print(f'Accuracy: {(correct / len(test_data)) * 100}% --- Correct: {correct} / {len(test_data)}')
+
+    @staticmethod
+    def one_hot_enc(values, val_range=10):
+        result = np.zeros((len(values), val_range, 1))
+        for i in range(len(values)):
+            result[i][values[i]][0] = 1
+        return result
+
+    def pickle(self, file='state.obj'):
+        with open(file, 'wb') as f:
+            pickle.dump(self, f)
+
+    @staticmethod
+    def unpickle(file='state.obj'):
+        with open(file, 'rb') as f:
+            return pickle.load(f)
