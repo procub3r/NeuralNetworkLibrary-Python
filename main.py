@@ -9,7 +9,7 @@ targets = [[1], [1], [0], [0]]
 
 nn.train(inputs, targets)
 
-print('---------------')
+print('----------------')
 
 for i in inputs:
 	print(f'input: {i}; output: {nn.feedforward(i)}')
